@@ -1,6 +1,4 @@
-# Chapter 1 - Introduction to plotly
-
-
+# Introduction to plotly
 
 ```r
 library(tidyverse)
