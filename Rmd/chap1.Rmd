@@ -1,0 +1,126 @@
+---
+title: "Introduction to plotly"
+output:
+  html_document:  
+    keep_md: true
+---
+
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(plotly)
+```
+
+오늘은 plotly 팩키지를 사용한 그래프 그리기에 대하여 알아보도록 하겠다. (tidyverse에 속해있는 ggplot2 팩키지가 아닌 plotly 팩키지를 선택하였는지에 대하여는 조금 있다가 눈으로 직접 확인할 수 있을 것이다.)
+
+## 데이터셋
+
+지난 시간에 사용했던 학생 성적 데이터를 사용하자. 
+```{r}
+set.seed(123)
+mydata <- data_frame(소속학급 = sample(3, 10, replace = TRUE),
+                     학생번호 = sample(30, 10, replace = TRUE),
+                     중간고사 = as.integer(rnorm(10, mean = 80, sd = 5)),
+                     기말고사 = as.integer(rnorm(10, mean = 70, sd = 7))) %>% 
+          mutate(합계 = 중간고사 + 기말고사,
+                 평균 = 합계 / 2)
+mydata
+```
+
+자, 이제 x축을 중간고사 성적, y축을 기말고사 성적을 나타내는 그래프를 그려보도록 하자.
+
+```{r}
+plot_ly(mydata, x = ~중간고사, y = ~기말고사) %>% 
+        add_markers(alpha = 1)
+```
+그려진 그래프는 plotly에서 자동으로 제공하는 플랫폼에 의하여 우리가 각 데이터 포인트의 정확한 값을 알 수도 있고, 특정 점들을 선택할 수 있는 기능과 축소 확대 기능도 제공된다. 이러한 기능은 우리가 나중에 문서를 인터넷에 올려놓았을때 독자들이 데이터를 좀 더 잘 이해하는데에 도움이 될 것이다. 하지만 plotly 그래프를 사용하여 문서를 작성하는 필자의 경우, 매번 그래프를 그릴때마다 계속 모든 기능을 이용해서 그리기에는 너무 버거운 감이 있어서 다음의 함수를 정의해서 각 그래프를 가볍게 만들어서 사용한다.
+
+```{r}
+static <- function(x){
+  config(x, displayModeBar = F) %>%
+  layout(xaxis=list(fixedrange=TRUE)) %>%
+  layout(yaxis=list(fixedrange=TRUE))
+}
+```
+
+`static` 함수를 정의할 함수 코드 뒤쪽에 붙여주면 결과물이 좀 더 가벼워 질 것이다. (사용 예는 바로 다음 문단에서 확인하자.)
+
+다시 위에서 그린 함수 이야기로 돌아가보면, 한가지 재미있는 사실은 plotly 팩키지 역시 ggplot2와 같이 레이어 기반의 그래프 문법을 지향하고 있다는 것이다. 때문에 ggplot2에서 사용되었던 레이어 개념이 똑같이 사용된다. (물론 첫번째 코드만 사용해서 plotly가 알아서 scatter plot을 그려주지만, warning 메세지를 통해서 속성을 함께 정의 해 줄것을 권장한다.) 즉, 첫번째 코드는 그래프의 기반이 되는 레이어를 설정하고, 두번째 코드를 사용하여 그래프에 사용될 데이터의 속성을 설정해 주는 것이다.
+
+그럼 이제부터 데이터의 속성을 조절하는 방법에 대하여 알아보도록 하자. 
+
+### 투명도 조절: `alpha`
+
+먼저, 앞에서 사용한 `alpha` 패러미터의 경우 데이터 포인트의 투명도를 조절하는 역할을 한다.
+
+```{r, warning=FALSE}
+p <- plot_ly(mydata, x = ~중간고사, y = ~기말고사)
+subplot(
+  add_markers(p, alpha = 1),
+  add_markers(p, alpha = 0.2)
+) %>% static()
+```
+
+투명도의 경우 겹쳐서 있는 데이터들을 좀 더 잘 표현할 수 있는 방법이 될 것이다.
+
+### 색깔 지정: `color`
+
+데이터의 색깔을 지정하고 싶은 경우는 `color`를 사용할 수 있는데, 한가지 색으로 지정도 가능하지만 다음과 같은 각 반에 따른 색깔 지정도 가능하다.
+
+```{r warning=FALSE}
+p <- plot_ly(mydata, x = ~중간고사, y = ~기말고사)
+subplot(
+  add_markers(p, color = I("Red"), showlegend = FALSE),
+  add_markers(p, color =~factor(소속학급))
+) %>% static()
+```
+
+### 기호 및 크기 설정: `symbol` & `size`
+
+데이터의 모양과 크기를 변경하고 싶은 경우는 `symbol` 항목과 `size`를 사용한다. 이 역시도 한가지 모양으로도 기정 가능하지만 다음과 같은 각 반에 따른 모양 지정도 가능하다.
+
+```{r}
+plot_ly(mydata, x = ~중간고사, y = ~기말고사) %>% 
+        add_markers(size = I(15),
+                    symbol = ~소속학급,
+                    color = ~factor(소속학급)) %>% static()
+```
+
+색깔을 지정 할 때 `factor`함수를 붙여주는 이유는 입력값이 이산형 자료라는 것을 알려주기 위함이다. 만약 `factor` 함수를 사용하지 않고 그냥 입력할 경우에는 소속학급 변수를 1, 2, 3반이 아닌 1~3사이의 값을 갖는 변수로 인식한다. 
+
+### 여러개의 그래프: `subplot`
+
+이렇게 모든 반의 학생들의 점수 분포를 한꺼번에 그려볼수도 있겠지만, 각 반별로 학생들의 점수를 그려보고 싶은 경우도 있을 것이다. 이 경우에는 이전 시간에 배운 `dplyr`의 `filter` 함수 등을 이용하여  각각 데이터를 따로 추출하여 그릴 수도 있겠지만, 다음과 같이 한꺼번에 그릴 수도 있다는 것을 알아두자.
+
+```{r}
+p <- plot_ly(mydata, x = ~중간고사, y = ~기말고사)
+subplot(
+  add_markers(p %>% filter(소속학급 == 1), color = I("Red"), showlegend = FALSE),
+  add_markers(p %>% filter(소속학급 == 2), color = I("Green"), showlegend = FALSE), 
+  add_markers(p %>% filter(소속학급 == 3), color = I("Blue"), showlegend = FALSE)
+) %>%
+layout(title = '반별 성적 그래프',
+       xaxis = list(side = 'left', title = "class1"),
+       xaxis2 = list(side = 'middle', title = "class2"),
+       xaxis3 = list(side = 'right', title = "class3"),
+       yaxis = list(side = 'left', title = '기말성적')) %>%
+static()
+```
+
+다음의 scatter plot은 plotly [홈페이지](https://plot.ly/r/)에서 개인적으로 너무 예뻐서 퍼왔다..
+
+```{r}
+set.seed(123)
+
+x <- rnorm(1000)
+y <- rchisq(1000, df = 1, ncp = 0)
+group <- sample(LETTERS[1:5], size = 1000, replace = T)
+size <- sample(1:5, size = 1000, replace = T)
+
+ds <- data.frame(x, y, group, size)
+
+plot_ly(ds, x = ~x, y = ~y, split = group, size = size) %>%
+  add_markers( color = ~group, showlegend = FALSE) %>% 
+  layout(title = "Scatter Plot")
+```
+
