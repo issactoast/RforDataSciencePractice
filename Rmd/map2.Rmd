@@ -68,7 +68,7 @@ krMap <- get_map(location=southKrLocation,
                  source = "google",
                  maptype = "watercolor",
                  crop = FALSE) #roadmap, terrain, toner, watercolor
-mymap <- ggmap(krMap, extent = 'device') # + theme_map() 
+mymap <- ggmap(krMap, extent = 'device')
 mymap
 ```
 
@@ -134,7 +134,7 @@ mymap_kriging <- mymap + tconts
 mymap_kriging
 ```
 
-두 가지 방법 모두 거의 동일한 등고선을 결과값으로 반환하는 것을 볼 수 있다. 마지막으로 `myCities` 안의 도시 이름과 기온 정보를 지도위에 표시하는 것으로 이번 포스팅을 마치도록 하겠다. 
+두 가지 방법 모두 거의 동일한 등고선을 결과값으로 반환하는 것을 볼 수 있다. 이제 `myCities` 안의 도시 이름과 기온 정보를 지도위에 표시하자. 
 
 ```{r}
 tpoints <- geom_text(aes(x = lon, y = lat, label = temp),
@@ -143,3 +143,46 @@ tcities <- geom_text(aes(x = lon, y = (lat + 0.3), label = city),
                      color = "black", data = myCities)
 mymap_kriging + tpoints + tcities
 ```
+
+### 온도별 등고선 색깔 바꾸기
+
+주어진 그래프의 경우 등고선과 도시별 온도가 나타나 있지만, 우리나라의 온도 분포가 잘 드러나지는 않는다. 좀 시각적 정보를 극대화 하기 위해서는 온도에 따른 등고선의 색깔을 다르게 입혀보도록 하자. 이 챕터의 내용은 [SangWoo Ham](https://www.facebook.com/ecosang?fref=ufi)님의 도움을 받았음을 밝힌다.
+
+#### Step 1 :먼저 등고선을 좀더 분명하게 나타내기 위해서 배경 지도를 연하게 한다.
+```{r}
+layer_map <- ggmap(krMap, extent = 'device',darken = c(0.6, "white"))
+layer_map
+```
+
+#### Step 2 : 등고선의 진하기를 기온에 따라서 달라지도록 설정한다.
+
+아래의 코드에서 `size`는 등고선의 굵기를 조절하는 모수이며, `bins`의 경우 주어진 기온 데이터를 15단계로 나누어서 표시하겠다는 의미이다.
+```{r}
+color_conts <- geom_contour(aes(x, y, z = temp, color =..level..), size=1,
+                data = surface, na.rm = TRUE, bins = 15)
+layer_map + color_conts
+```
+
+#### Step 3 : 등고선의 색깔을 기온에 따라서 달라지도록 변경한다.
+
+마지막 단계는 온도에 따른 색깔을 맞춰주는 것인데 높은 온도일 수록 빨강색을, 낮은 온도일 수록 파란색을 띄도록 하면 지역별 기온 분포를 훨씬 쉽게 알아볼 수 있다.
+```{r}
+color_pick <- scale_colour_distiller(palette="RdBu")
+layer_map + color_conts + color_pick
+```
+
+### 마치며
+
+이제까지 공부한 내용을 바탕으로 각 도시별 기온 지도를 그려보도록 하자.
+
+```{r}
+geom_contour(aes(x, y, z = temp, color =..level..), size=1,
+                data = surface, na.rm = TRUE, bins = 15)
+
+layer_map + color_conts + color_pick +
+  geom_text(aes(x = lon, y = lat, label = temp),
+                     color = "black", data = myCities) +
+  geom_text(aes(x = lon, y = (lat + 0.3), label = city),
+                     color = "black", data = myCities)
+```
+
