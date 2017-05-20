@@ -79,9 +79,9 @@ head(myCities)
 ##     <chr>      <chr>    <dbl>    <dbl> <dbl>
 ## 1      KR       Jeju 126.5219 33.50972 16.40
 ## 2      KR    Gwangju 126.9156 35.15472 11.15
-## 3      KR    Daejeon 127.4197 36.32139 16.15
+## 3      KR    Daejeon 127.4197 36.32139 15.15
 ## 4      KR      Busan 129.0403 35.10278 16.61
-## 5      KR      Seoul 126.9778 37.56826 14.75
+## 5      KR      Seoul 126.9778 37.56826 14.32
 ## 6      KR Kang-neung 128.8961 37.75556 17.00
 ```
 
@@ -104,7 +104,7 @@ surface <- with(layerCities, interp(lon, lat, temp, linear = FALSE))
 srfc <- expand.grid(lon = surface$x, lat = surface$y)
 srfc$temp <- as.vector(surface$z)
 tconts <- geom_contour(aes(x = lon, y = lat, z = temp),
-                       data = srfc, color = "black", na.rm = TRUE)
+                       data = srfc, color = "black", na.rm = TRUE, alpha = 0.4)
 
 mymap_interp <- mymap + tconts
 mymap_interp
@@ -132,7 +132,7 @@ mymap_kriging
 
 ![](map2_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
 
-두 가지 방법 모두 거의 동일한 등고선을 결과값으로 반환하는 것을 볼 수 있다. 이제 `myCities` 안의 도시 이름과 기온 정보를 지도위에 표시하자. 
+두 가지 방법이 조금 다른 등고선을 결과값으로 반환하는 것을 볼 수 있다. 필자의 경우는 좀더 매끄러운 등고선을 반환하는 크리깅 기법을 더 선호한다. 이제 `myCities` 안의 도시 이름과 기온 정보를 지도위에 표시하자. 
 
 
 ```r
