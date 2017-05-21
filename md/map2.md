@@ -1,6 +1,11 @@
-# R을 이용한 시각화 2 - ggmap을 이용한 도시별 현재 기온 지도 그리기
-ISSAC LEE  
-5/17/2017  
+---
+title: "R을 이용한 시각화 2 - ggmap을 이용한 도시별 현재 기온 지도 그리기"
+author: "ISSAC LEE"
+date: "5/17/2017"
+output: 
+  html_document:  
+    keep_md: true
+---
 
 
 
@@ -40,7 +45,7 @@ mymap <- ggmap(krMap, extent = 'device')
 mymap
 ```
 
-![](map2_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+![plot of chunk unnamed-chunk-3](../md/map2_files//unnamed-chunk-3-1.png)
 
 `get_map`함수의 maptype 옵션을 "watercolor"로 설정하면 위와 같이 아주 예쁜 지도가 나타난다. 이렇게 준비한 지도 위에 우리가 이전 시간에 공부했던 웹상의 정보를 끌어와 지도위에 나타내어보자.
 
@@ -77,12 +82,12 @@ head(myCities)
 ## # A tibble: 6 × 5
 ##   country       city      lon      lat  temp
 ##     <chr>      <chr>    <dbl>    <dbl> <dbl>
-## 1      KR       Jeju 126.5219 33.50972 16.40
-## 2      KR    Gwangju 126.9156 35.15472 11.15
-## 3      KR    Daejeon 127.4197 36.32139 15.15
-## 4      KR      Busan 129.0403 35.10278 16.61
-## 5      KR      Seoul 126.9778 37.56826 14.32
-## 6      KR Kang-neung 128.8961 37.75556 17.00
+## 1      KR       Jeju 126.5219 33.50972 19.09
+## 2      KR    Gwangju 126.9156 35.15472 20.79
+## 3      KR    Daejeon 127.4197 36.32139 21.50
+## 4      KR      Busan 129.0403 35.10278 22.92
+## 5      KR      Seoul 126.9778 37.56826 21.15
+## 6      KR Kang-neung 128.8961 37.75556 27.00
 ```
 
 ## 보간법(Interpolation)과 크리깅(Kriging)을 사용한 등고선 그리기
@@ -110,7 +115,7 @@ mymap_interp <- mymap + tconts
 mymap_interp
 ```
 
-![](map2_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+![plot of chunk unnamed-chunk-6](../md/map2_files//unnamed-chunk-6-1.png)
 
 ### 크리깅(Kriging)을 이용한 등고선 그리기
 
@@ -130,7 +135,7 @@ mymap_kriging <- mymap + tconts
 mymap_kriging
 ```
 
-![](map2_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
+![plot of chunk unnamed-chunk-7](../md/map2_files//unnamed-chunk-7-1.png)
 
 두 가지 방법이 조금 다른 등고선을 결과값으로 반환하는 것을 볼 수 있다. 필자의 경우는 좀더 매끄러운 등고선을 반환하는 크리깅 기법을 더 선호한다. 이제 `myCities` 안의 도시 이름과 기온 정보를 지도위에 표시하자. 
 
@@ -143,7 +148,7 @@ tcities <- geom_text(aes(x = lon, y = (lat + 0.3), label = city),
 mymap_kriging + tpoints + tcities
 ```
 
-![](map2_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+![plot of chunk unnamed-chunk-8](../md/map2_files//unnamed-chunk-8-1.png)
 
 ### 온도별 등고선 색깔 바꾸기
 
@@ -153,18 +158,10 @@ mymap_kriging + tpoints + tcities
 
 ```r
 layer_map <- ggmap(krMap, extent = 'device',darken = c(0.6, "white"))
-```
-
-```
-## Warning: `panel.margin` is deprecated. Please use `panel.spacing` property
-## instead
-```
-
-```r
 layer_map
 ```
 
-![](map2_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
+![plot of chunk unnamed-chunk-9](../md/map2_files//unnamed-chunk-9-1.png)
 
 #### Step 2 : 등고선의 진하기를 기온에 따라서 달라지도록 설정한다.
 
@@ -176,7 +173,7 @@ color_conts <- geom_contour(aes(x, y, z = temp, color =..level..), size=1,
 layer_map + color_conts
 ```
 
-![](map2_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+![plot of chunk unnamed-chunk-10](../md/map2_files//unnamed-chunk-10-1.png)
 
 #### Step 3 : 등고선의 색깔을 기온에 따라서 달라지도록 변경한다.
 
@@ -187,24 +184,12 @@ color_pick <- scale_colour_distiller(palette="RdBu")
 layer_map + color_conts + color_pick
 ```
 
-![](map2_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+![plot of chunk unnamed-chunk-11](../md/map2_files//unnamed-chunk-11-1.png)
 
 ### 마치며
 
 이제까지 공부한 내용을 바탕으로 각 도시별 기온 지도를 그려보도록 하자.
 
-
-```r
-geom_contour(aes(x, y, z = temp, color =..level..), size=1,
-                data = surface, na.rm = TRUE, bins = 15)
-```
-
-```
-## mapping: x = x, y = y, z = temp, colour = ..level.. 
-## geom_contour: lineend = butt, linejoin = round, linemitre = 1, na.rm = TRUE
-## stat_contour: na.rm = TRUE, bins = 15
-## position_identity
-```
 
 ```r
 layer_map + color_conts + color_pick +
@@ -214,5 +199,5 @@ layer_map + color_conts + color_pick +
                      color = "black", data = myCities)
 ```
 
-![](map2_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
+![plot of chunk unnamed-chunk-12](../md/map2_files//unnamed-chunk-12-1.png)
 

@@ -149,7 +149,7 @@ mymap_kriging + tpoints + tcities
 주어진 그래프의 경우 등고선과 도시별 온도가 나타나 있지만, 우리나라의 온도 분포가 잘 드러나지는 않는다. 좀 시각적 정보를 극대화 하기 위해서는 온도에 따른 등고선의 색깔을 다르게 입혀보도록 하자. 이 챕터의 내용은 [SangWoo Ham](https://www.facebook.com/ecosang?fref=ufi)님의 도움을 받았음을 밝힌다.
 
 #### Step 1 :먼저 등고선을 좀더 분명하게 나타내기 위해서 배경 지도를 연하게 한다.
-```{r}
+```{r, message=FALSE, warning=FALSE}
 layer_map <- ggmap(krMap, extent = 'device',darken = c(0.6, "white"))
 layer_map
 ```
@@ -176,9 +176,6 @@ layer_map + color_conts + color_pick
 이제까지 공부한 내용을 바탕으로 각 도시별 기온 지도를 그려보도록 하자.
 
 ```{r}
-geom_contour(aes(x, y, z = temp, color =..level..), size=1,
-                data = surface, na.rm = TRUE, bins = 15)
-
 layer_map + color_conts + color_pick +
   geom_text(aes(x = lon, y = lat, label = temp),
                      color = "black", data = myCities) +
